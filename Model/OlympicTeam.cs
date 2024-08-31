@@ -43,6 +43,37 @@ namespace BasketballTournament.Model
             }
         }
 
+        public void UpdateForm(List<ExhibitionMatch> exhibitionMatches, List<Match> tournamentMatches)
+        {
+            double formScore = 0;
+            int matchCount = 0;
+
+          
+            if (exhibitionMatches != null)
+            {
+                foreach (var match in exhibitionMatches)
+                {
+                    int scoreDifference = ExhibitionMatch.GetScoreDifferenceForTeam(match, ISOCode); 
+                    formScore += scoreDifference;
+                    matchCount++;
+                }
+            }
+         
+
+            if(tournamentMatches != null)
+            {
+                foreach (var match in tournamentMatches)
+                {
+                    int scoreDifference = match.GetScoreDifferenceForTeam(ISOCode);
+                    formScore += scoreDifference;
+                    matchCount++;
+                }
+            }
+
+            Form = matchCount > 0 ? (1 + formScore / (matchCount * 20.0)) : 1.0;
+        }
+
+
         public static int CompareTeamsByMutualResults(OlympicTeam team1, OlympicTeam team2, Dictionary<string, List<Match>> groupMatches)
         {
             var match = groupMatches.Values.SelectMany(g => g)

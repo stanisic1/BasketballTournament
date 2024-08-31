@@ -11,11 +11,27 @@ namespace BasketballTournament
     public class Tournament
     {
         public Dictionary<string, List<OlympicTeam>> Groups { get; set; }
+        private Dictionary<string, List<ExhibitionMatch>> Exhibitions { get; set; }
         private List<Model.Match> Matches { get; set; } = new List<Model.Match>();
 
-        public Tournament(Dictionary<string, List<OlympicTeam>> groups)
+        public Tournament(Dictionary<string, List<OlympicTeam>> groups, Dictionary<string, List<ExhibitionMatch>> exhibitions)
         {
             Groups = groups;
+            Exhibitions = exhibitions;
+        }
+
+        public void InitializeTeamForms()
+        {
+            foreach (var group in Groups)
+            {
+                foreach (var team in group.Value)
+                {
+                    if (Exhibitions.TryGetValue(team.ISOCode, out var exhibitionMatches))
+                    {
+                        team.UpdateForm(exhibitionMatches, new List<Model.Match>());
+                    }
+                }
+            }
         }
 
         public void SimulateGroupStage()
@@ -34,8 +50,21 @@ namespace BasketballTournament
                         match.PrintResult(group.Key);
                     }
                 }
+                UpdateTeamFormsAfterMatch();
             }
             Console.WriteLine();
+        }
+
+        public void UpdateTeamFormsAfterMatch()
+        {
+            foreach (var group in Groups)
+            {
+                foreach (var team in group.Value)
+                {
+                    var tournamentMatches = Matches.Where(m => m.Team1.ISOCode == team.ISOCode || m.Team2.ISOCode == team.ISOCode).ToList();
+                    team.UpdateForm(Exhibitions.GetValueOrDefault(team.ISOCode, new List<ExhibitionMatch>()), tournamentMatches);
+                }
+            }
         }
 
         public void PrintGroupRankings()

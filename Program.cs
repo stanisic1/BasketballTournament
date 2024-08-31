@@ -8,10 +8,12 @@ class Program
     {
         var groups = JsonSerializer.Deserialize<Dictionary<string, List<OlympicTeam>>>(DataStorage.GroupData);
 
-       // var exhibitions = JsonSerializer.Deserialize<Dictionary<string, List<ExhibitionMatch>>>(DataStorage.ExhibitionData);
+        var exhibitions = JsonSerializer.Deserialize<Dictionary<string, List<ExhibitionMatch>>>(DataStorage.ExhibitionData);
 
-        var tournament = new Tournament(groups);
+        var tournament = new Tournament(groups, exhibitions);
 
+
+        tournament.InitializeTeamForms();
         tournament.SimulateGroupStage();
         tournament.PrintGroupRankings();
         tournament.RankAndSetupHats();

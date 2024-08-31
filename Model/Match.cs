@@ -25,7 +25,7 @@ namespace BasketballTournament.Model
 
             double surrenderProbability = 0.03; 
 
-            int baseScoreMin = 60;
+            int baseScoreMin = 70;
             int baseScoreMax = 120;
             int team1Score = rand.Next(baseScoreMin, baseScoreMax);
             int team2Score = rand.Next(baseScoreMin, baseScoreMax);
@@ -51,16 +51,27 @@ namespace BasketballTournament.Model
                 team2.UpdateStats(0, 20, false, 0); 
             }
             else
-            {        
+            {
+                int maxAdjustment = 10;
                 if (team1Probability > team2Probability)
-                {                 
-                    team1Score += (int)(team1Score * rankingImpactFactor * team1Probability);
-                    team2Score -= (int)(team2Score * rankingImpactFactor * team2Probability);
+                {
+                    //team1Score += (int)((team1Score * team1Probability) - (team2Score * team2Probability) * 0.5);
+                    //team2Score -= (int)((team2Score * team2Probability) - (team1Score * team1Probability) * 0.5);
+
+                    team1Score += (int)(maxAdjustment * (team1Probability - team2Probability));
+
+                    //team1Score += (int)(team1Score  * team1Probability);
+                    // team2Score -= (int)(team2Score * team2Probability);
                 }
                 else
                 {
-                    team2Score += (int)(team2Score * rankingImpactFactor * team2Probability);
-                    team1Score -= (int)(team1Score * rankingImpactFactor * team1Probability);
+                    //team2Score += (int)((team2Score * team2Probability) - (team1Score * team1Probability) * 0.5);
+                    //team1Score -= (int)((team1Score * team1Probability) - (team2Score * team2Probability) * 0.5);
+
+                    team2Score += (int)(maxAdjustment * (team2Probability - team1Probability));
+
+                    //team2Score += (int)(team2Score * team2Probability);
+                    //team1Score -= (int)(team1Score * team1Probability);
                 }
 
               
@@ -107,9 +118,24 @@ namespace BasketballTournament.Model
             double rankingDifference = team2.FIBARanking - team1.FIBARanking;
 
             double baseProbability = 0.5; 
-            double probabilityAdjustment = Math.Clamp(rankingDifference / 100.0, -0.25, 0.25); 
+            double probabilityAdjustment = Math.Clamp(rankingDifference / 20.0, -0.25, 0.25);
 
-            return baseProbability + probabilityAdjustment;
+            double formImpact = team1.Form / (team1.Form + team2.Form);
+
+            return Math.Clamp(baseProbability + probabilityAdjustment + (formImpact - 0.5) * 0.2, 0, 1);
+        }
+
+        public int GetScoreDifferenceForTeam(string teamCode)
+        {
+            if (Team1.ISOCode == teamCode)
+            {
+                return Team1Score - Team2Score;
+            }
+            if (Team2.ISOCode == teamCode)
+            {
+                return Team2Score - Team1Score;
+            }
+            return 0; 
         }
 
         public void PrintResult(string groupName)
