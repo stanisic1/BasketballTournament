@@ -54,24 +54,13 @@ namespace BasketballTournament.Model
             {
                 int maxAdjustment = 10;
                 if (team1Probability > team2Probability)
-                {
-                    //team1Score += (int)((team1Score * team1Probability) - (team2Score * team2Probability) * 0.5);
-                    //team2Score -= (int)((team2Score * team2Probability) - (team1Score * team1Probability) * 0.5);
-
+                {          
                     team1Score += (int)(maxAdjustment * (team1Probability - team2Probability));
-
-                    //team1Score += (int)(team1Score  * team1Probability);
-                    // team2Score -= (int)(team2Score * team2Probability);
                 }
                 else
                 {
-                    //team2Score += (int)((team2Score * team2Probability) - (team1Score * team1Probability) * 0.5);
-                    //team1Score -= (int)((team1Score * team1Probability) - (team2Score * team2Probability) * 0.5);
-
                     team2Score += (int)(maxAdjustment * (team2Probability - team1Probability));
 
-                    //team2Score += (int)(team2Score * team2Probability);
-                    //team1Score -= (int)(team1Score * team1Probability);
                 }
 
               

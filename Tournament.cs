@@ -147,7 +147,7 @@ namespace BasketballTournament
 
             if (allTeams.Count < 9)
             {
-                Console.WriteLine("Not enough teams to proceed to the knockout stage.");
+                Console.WriteLine("Nema dovoljno timova da se predje u eliminacionu fazu.");
                 return;
             }
 
@@ -174,7 +174,7 @@ namespace BasketballTournament
         {
             if (Matches == null || !Matches.Any())
             {
-                throw new InvalidOperationException("Matches data is not available or empty.");
+                throw new InvalidOperationException("Nema podataka za utakmice.");
             }
 
             return Matches.Where(m => m.GroupKey == groupKey);
@@ -196,11 +196,9 @@ namespace BasketballTournament
             var random = new Random();
             var quarterFinals = new List<Model.Match>();
 
-            // Create lists to store possible pairs
             var possibleMatchesD_G = new List<(OlympicTeam, OlympicTeam)>();
             var possibleMatchesE_F = new List<(OlympicTeam, OlympicTeam)>();
 
-            // Populate possible matches between Hat D and Hat G
             foreach (var teamD in hatD)
             {
                 foreach (var teamG in hatG)
@@ -212,7 +210,7 @@ namespace BasketballTournament
                 }
             }
 
-            // Populate possible matches between Hat E and Hat F
+
             foreach (var teamE in hatE)
             {
                 foreach (var teamF in hatF)
@@ -224,17 +222,7 @@ namespace BasketballTournament
                 }
             }
 
-            // Helper function to select a valid matchup from a list
-            Func<List<(OlympicTeam, OlympicTeam)>, (OlympicTeam, OlympicTeam)> SelectValidMatch = (List<(OlympicTeam, OlympicTeam)> matches) =>
-            {
-                if (matches.Count == 0) return default;
-                var matchIndex = random.Next(matches.Count);
-                var matchPair = matches[matchIndex];
-                matches.RemoveAt(matchIndex);
-                return matchPair;
-            };
-
-            // Handle mandatory matchups (where only one valid opponent remains)
+           
             var mandatoryMatches = new List<(OlympicTeam, OlympicTeam)>();
             var hatDTeams = new List<OlympicTeam>(hatD);
             var hatGTeams = new List<OlympicTeam>(hatG);
@@ -253,7 +241,7 @@ namespace BasketballTournament
                 }
             }
 
-            // Similarly handle Hat E vs Hat F
+            
             var hatETeams = new List<OlympicTeam>(hatE);
             var hatFTeams = new List<OlympicTeam>(hatF);
 
@@ -271,19 +259,18 @@ namespace BasketballTournament
                 }
             }
 
-            // Add mandatory matches to the quarterFinals list
             foreach (var matchPair in mandatoryMatches)
             {
                 quarterFinals.Add(Model.Match.Simulate(matchPair.Item1, matchPair.Item2));
             }
 
-            // Remove used teams from possible matches
+           
             hatDTeams = hatDTeams.Except(mandatoryMatches.Select(m => m.Item1)).ToList();
             hatGTeams = hatGTeams.Except(mandatoryMatches.Select(m => m.Item2)).ToList();
             hatETeams = hatETeams.Except(mandatoryMatches.Select(m => m.Item1)).ToList();
             hatFTeams = hatFTeams.Except(mandatoryMatches.Select(m => m.Item2)).ToList();
 
-            // Handle remaining matchups
+           
             while (possibleMatchesD_G.Count > 0 && hatDTeams.Count > 0 && hatGTeams.Count > 0)
             {
                 var matchPair = SelectValidMatch(possibleMatchesD_G);
@@ -306,7 +293,6 @@ namespace BasketballTournament
                 }
             }
 
-            // Print Quarter-Final Matches
 
             Console.WriteLine("\nCetvrtfinale:");
             foreach (var match in quarterFinals)
@@ -314,33 +300,39 @@ namespace BasketballTournament
                 match.PrintKnockoutResult();
             }
 
-            // Check if we have enough semi-finalists
+           
             if (quarterFinals.Count < 4)
             {
-                Console.WriteLine("Not enough matches were generated for semi-finals due to conflicting matchups.");
+                Console.WriteLine("Nema dovoljno timova da se kreiraju cetvrtfinala.");
                 return;
             }
 
-            // Winners from D vs G form Hat H; Winners from E vs F form Hat I
+           
             var hatH = quarterFinals.Where(match => hatD.Contains(match.Team1) || hatG.Contains(match.Team1)).Select(match => match.WinningTeam).ToList();
             var hatI = quarterFinals.Where(match => hatE.Contains(match.Team1) || hatF.Contains(match.Team1)).Select(match => match.WinningTeam).ToList();
 
-            // Print out the new hats for verification
-           // PrintHatTeams("Hat H", hatH);
-           // PrintHatTeams("Hat I", hatI);
-
-            // Generate Semi-Finals
+            
             var semiFinals = GenerateSemiFinals(hatH, hatI);
 
-            // Print Semi-Final Matches
+          
             Console.WriteLine("\nPolufinale:");
             foreach (var match in semiFinals)
             {
                 match.PrintKnockoutResult();
             }
 
-            // Generate Final and Third Place Matches
             GenerateFinalAndThirdPlaceMatches(semiFinals);
+        }
+
+        private (OlympicTeam, OlympicTeam) SelectValidMatch(List<(OlympicTeam, OlympicTeam)> matches)
+        {
+            var random = new Random();
+
+            if (matches.Count == 0) return default;
+            var matchIndex = random.Next(matches.Count);
+            var matchPair = matches[matchIndex];
+            matches.RemoveAt(matchIndex);
+            return matchPair;
         }
 
 
@@ -357,7 +349,6 @@ namespace BasketballTournament
             var random = new Random();
             var semiFinals = new List<Model.Match>();
 
-            // Randomly pair teams from Hat H and Hat I
             while (hatH.Any() && hatI.Any())
             {
                 var teamH = hatH[random.Next(hatH.Count)];
@@ -374,17 +365,14 @@ namespace BasketballTournament
 
         private void GenerateFinalAndThirdPlaceMatches(List<Model.Match> semiFinals)
         {
-            // Simulate the Final Match
             var finalMatch = Model.Match.Simulate(semiFinals[0].WinningTeam, semiFinals[1].WinningTeam);
 
-            // Simulate the Third Place Match
             var thirdPlaceMatch = Model.Match.Simulate(semiFinals[0].LosingTeam, semiFinals[1].LosingTeam);
 
-            // Print Third-Place Match Result
+           
             Console.WriteLine("\nUtakmica za trece mesto:");
             thirdPlaceMatch.PrintKnockoutResult();
 
-            // Print Final Match Result
             Console.WriteLine("\nFinale:");
             finalMatch.PrintKnockoutResult();
 
@@ -392,7 +380,6 @@ namespace BasketballTournament
             var silverMedalist = finalMatch.LosingTeam;
             var bronzeMedalist = thirdPlaceMatch.WinningTeam;
 
-            // Print Medal Standings
             Console.WriteLine("\nMedalje:");
             Console.WriteLine($"1. {goldMedalist.Team}");
             Console.WriteLine($"2. {silverMedalist.Team}");
